@@ -1,9 +1,7 @@
-## BLE Beacon Scanner
+Algorithm:
 
-Initiates a BLE device scan.
-Checks if the discovered devices are 
-- an iBeacon
-- an Eddystone TLM beacon
-- an Eddystone URL beacon
+if (no visible beacons < 3)
+  Use zones
 
-and sends the decoded beacon information over Serial log
+else
+  
