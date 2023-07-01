@@ -4,13 +4,14 @@
 using namespace std;
 
 #ifndef EPSILON
-#define EPSILON 1
+#define EPSILON 3
 #endif
 
 
 bool calculateThreeCircleIntersection(double x0, double y0, double r0,
                                       double x1, double y1, double r1,
-                                      double x2, double y2, double r2)
+                                      double x2, double y2, double r2,
+                                      double* result_x, double* result_y)
 {
   double a, dx, dy, d, h, rx, ry;
   double point2_x, point2_y;
@@ -62,38 +63,34 @@ bool calculateThreeCircleIntersection(double x0, double y0, double r0,
   rx = -dy * (h / d);
   ry = dx * (h / d);
 
-  /* Determine the absolute intersection points. */
-  double intersectionPoint1_x = point2_x + rx;
-  double intersectionPoint2_x = point2_x - rx;
-  double intersectionPoint1_y = point2_y + ry;
-  double intersectionPoint2_y = point2_y - ry;
+  /* Determine intersection points. */
+  double intersecPoint1_x = point2_x + rx;
+  double intersecPoint2_x = point2_x - rx;
+  double intersecPoint1_y = point2_y + ry;
+  double intersecPoint2_y = point2_y - ry;
 
   /* Lets determine if circle 3 intersects at either of the above intersection points. */
-  dx = intersectionPoint1_x - x2;
-  dy = intersectionPoint1_y - y2;
+  dx = intersecPoint1_x - x2;
+  dy = intersecPoint1_y - y2;
   double d1 = sqrt((dy * dy) + (dx * dx));
 
-  dx = intersectionPoint2_x - x2;
-  dy = intersectionPoint2_y - y2;
+  dx = intersecPoint2_x - x2;
+  dy = intersecPoint2_y - y2;
   double d2 = sqrt((dy * dy) + (dx * dx));
 
   if (abs(d1 - r2) < EPSILON)
   {
-    cout << "INTERSECTION Circle1 AND Circle2 AND Circle3: (" << intersectionPoint1_x << "," << intersectionPoint1_y << ")\n";
+    *result_x = intersecPoint1_x;
+    *result_y = intersecPoint1_y;
+    return true;
   }
   else if (abs(d2 - r2) < EPSILON)
   {
-    cout << "INTERSECTION Circle1 AND Circle2 AND Circle3: (" << intersectionPoint2_x << "," << intersectionPoint2_y << ")\n";
+    *result_x = intersecPoint2_x;
+    *result_y = intersecPoint2_y;
+    return true;
   }
-  else
-  {
-    cout << "INTERSECTION Circle1 AND Circle2 AND Circle3:" << "NONE\n";
-  }
-  return true;
-}
 
-int main()
-{
-  calculateThreeCircleIntersection(0, 0, 5, 9.9, 0, 5, 5, 5, 5);
-  return 0;
+  /* The individual distances between the intersection points and the radius of the third beacon are tot great. */
+  return false;
 }
