@@ -16,25 +16,25 @@
 // DEFINES
 #define ENDIAN_CHANGE_U16(x) ((((x)&0xFF00) >> 8) + (((x)&0xFF) << 8))
 
-#define BEACON_ONE_UUID "87bcbcc3-644e-4fb1-966e-23f9e4242112" //Maria main Phone
+#define BEACON_ONE_UUID  "122124e4-f923-6e96-b14f-4e64c3bcbc87" //Maria main Phone // "87bcbcc3-644e-4fb1-966e-23f9e4242112"
 #define BEACON_ONE_MAJOR 8
 #define BEACON_ONE_MINOR 1
 #define BEACON_ONE_POWER -59
 #define BEACON_ONE_POS_X 0
 #define BEACON_ONE_POS_Y 0
 
-#define BEACON_TWO_UUID "1155d39a-e93b-4099-92e0-fe05c818814e"  // Maria Tablet
+#define BEACON_TWO_UUID "4e8118c8-05fe-e092-9940-3be99ad35511"  // Maria Tablet
 #define BEACON_TWO_MAJOR 8
 #define BEACON_TWO_MINOR 2
 #define BEACON_TWO_POWER -59
-#define BEACON_TWO_POS_X 10
-#define BEACON_TWO_POS_Y 10
+#define BEACON_TWO_POS_X 100
+#define BEACON_TWO_POS_Y 100
 
-#define BEACON_THREE_UUID "1d6d3cc6-b6b8-4cec-84f3-a7f56f84ffaa" // Maria old Phone
+#define BEACON_THREE_UUID "aaff846f-f5a7-f384-ec4c-b8b6c63c6d1d" // Maria old Phone
 #define BEACON_THREE_MAJOR 8
 #define BEACON_THREE_MINOR 3
 #define BEACON_THREE_POWER -59
-#define BEACON_THREE_POS_X 10
+#define BEACON_THREE_POS_X 100
 #define BEACON_THREE_POS_Y 0
 
 int scanTime = 1; // In seconds
@@ -80,7 +80,7 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
 
         if (strManufacturerData.length() == 25 && cManufacturerData[0] == 0x4C && cManufacturerData[1] == 0x00)
         {
-          Serial.println("Found an iBeacon!");
+          // Serial.println("Found an iBeacon!");
           BLEBeacon oBeacon = BLEBeacon();
           oBeacon.setData(strManufacturerData);
           
@@ -96,25 +96,25 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
           String beaconName = oBeacon.getProximityUUID().toString().c_str();
           int beaconRSSI = advertisedDevice.getRSSI();
           if(beaconName.compareTo(BEACON_ONE_UUID)== 0) {
-            // Serial.printf("FOUND MAIN PHONE\n");
+            //Serial.printf("FOUND MAIN PHONE\n");
             numberOfVisibleBeacons++;
             RSSIOne = beaconRSSI;
             // Serial.printf("RSSI 1: %i\n", RSSIOne);
           }
           if(beaconName.compareTo(BEACON_TWO_UUID)==0) {
-            // Serial.printf("FOUND TABLET\n");
+            //Serial.printf("FOUND TABLET\n");
             numberOfVisibleBeacons++;
             RSSITwo = beaconRSSI;
             // Serial.printf("RSSI 2: %i\n", RSSITwo);
           }
           if(beaconName.compareTo(BEACON_THREE_UUID)==0) {
-            // Serial.printf("FOUND OLD PHONE\n");
+            //Serial.printf("FOUND OLD PHONE\n");
             numberOfVisibleBeacons++;
             RSSIThree = beaconRSSI;
             // Serial.printf("RSSI 3: %i\n", RSSIThree);
           }
 
-          // Serial.printf("BEACONS: %i\n", numberOfVisibleBeacons);
+          //Serial.printf("BEACONS: %i\n", numberOfVisibleBeacons);
         }
       }
       return;
@@ -139,14 +139,28 @@ void loop()
 {
   // put your main code here, to run repeatedly:
   BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
-  Serial.print("Devices found: ");
-  Serial.println(foundDevices.getCount());
+  //Serial.print("Devices found: ");
+  //Serial.println(foundDevices.getCount());
   Serial.println("Scan done!");
 
   // check how many position iBeacons have been found and acts accordingly
   if (numberOfVisibleBeacons >= 3) {
-    // TO DO
-    // ALGO
+
+    /* Intialize vars for position result */
+    double result_x = 0;
+    double result_y = 0;
+    double r1 = abs(RSSIOne);
+    double r2 = abs(RSSITwo);
+    double r3 = abs(RSSIThree);
+    calculateThreeCircleIntersection(BEACON_ONE_POS_X, BEACON_ONE_POS_Y, r1,
+                                     BEACON_TWO_POS_X, BEACON_TWO_POS_Y, r2,
+                                     BEACON_THREE_POS_X, BEACON_THREE_POS_Y, r3,
+                                     &result_x, &result_y);
+    Serial.printf("-----------------\n");
+    Serial.printf("Position found: (%d, %d)\n", result_x, result_y);
+    Serial.printf("-----------------\n");
+
+
   } else {
     if (RSSIOne >= RSSITwo && RSSIOne >= RSSIThree) {
       Serial.printf("-----------------\n");
@@ -173,7 +187,4 @@ void loop()
   RSSITwo = -1000;
   RSSIThree = -1000;
   delay(2000);
-
-  // Point point = calculateObjectCoordinates(10, 0, 0);
-  // Serial.printf("Calc Result x = %d, y = %d", point.x, point.y);
 }
