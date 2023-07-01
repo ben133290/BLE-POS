@@ -1,7 +1,5 @@
-#include <iostream>
 #include <cmath>
-#include <format>
-using namespace std;
+#include "positioning.h"
 
 #ifndef EPSILON
 #define EPSILON 3
@@ -24,19 +22,16 @@ bool calculateThreeCircleIntersection(double x0, double y0, double r0,
 
   /* Determine the straight-line distance between the centers. */
   d = sqrt((dy * dy) + (dx * dx));
-  cout << "Distance between first two beacons: " << d << "\n";
 
   /* Check for solvability. */
   if (d > (r0 + r1))
   {
     /* no solution. circles do not intersect. */
-    cout << "Error: Circles do not intersect because the radii don't overlap!\n";
     return false;
   }
   if (d < abs(r0 - r1))
   {
     /* no solution. one circle is contained in the other */
-    cout << "Error: Circles do not intersect because one circle is contained in the other!\n";
     return false;
   }
 

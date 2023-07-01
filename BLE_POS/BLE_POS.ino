@@ -9,6 +9,7 @@
 #include <BLEEddystoneTLM.h>
 #include <BLEBeacon.h>
 #include <cmath>
+#include "positioning.h"
 
 #include <string>
 
