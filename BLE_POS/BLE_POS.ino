@@ -10,6 +10,7 @@
 #include <BLEBeacon.h>
 #include <cmath>
 #include "positioning.h"
+#include "heltec.h"
 
 #include <string>
 
@@ -94,21 +95,22 @@ class MyAdvertisedDeviceCallbacks : public BLEAdvertisedDeviceCallbacks
           
           // check which of the position iBeacons can be seen
           String beaconName = oBeacon.getProximityUUID().toString().c_str();
+          Serial.printf("UUID: %s \n", beaconName);
           int beaconRSSI = advertisedDevice.getRSSI();
           if(beaconName.compareTo(BEACON_ONE_UUID)== 0) {
-            //Serial.printf("FOUND MAIN PHONE\n");
+            Serial.printf("FOUND MAIN PHONE\n");
             numberOfVisibleBeacons++;
             RSSIOne = beaconRSSI;
             // Serial.printf("RSSI 1: %i\n", RSSIOne);
           }
           if(beaconName.compareTo(BEACON_TWO_UUID)==0) {
-            //Serial.printf("FOUND TABLET\n");
+            Serial.printf("FOUND TABLET\n");
             numberOfVisibleBeacons++;
             RSSITwo = beaconRSSI;
             // Serial.printf("RSSI 2: %i\n", RSSITwo);
           }
           if(beaconName.compareTo(BEACON_THREE_UUID)==0) {
-            //Serial.printf("FOUND OLD PHONE\n");
+            Serial.printf("FOUND OLD PHONE\n");
             numberOfVisibleBeacons++;
             RSSIThree = beaconRSSI;
             // Serial.printf("RSSI 3: %i\n", RSSIThree);
@@ -127,6 +129,11 @@ void setup()
   Serial.begin(115200);
   Serial.println("Scanning...");
 
+  // setting up the display
+  Heltec.begin(true /*DisplayEnable Enable*/, false /*LoRa Disable*/, true /*Serial Enable*/);
+  Heltec.display->setContrast(255); 
+  Heltec.display->setFont(ArialMT_Plain_16);    // changing the font size
+
   BLEDevice::init("");
   pBLEScan = BLEDevice::getScan(); // create new scan
   pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
@@ -137,6 +144,9 @@ void setup()
 
 void loop()
 {
+  // clearing the display
+  Heltec.display->clear();
+
   // put your main code here, to run repeatedly:
   BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
   //Serial.print("Devices found: ");
@@ -162,24 +172,36 @@ void loop()
 
 
   } else {
-    if (RSSIOne >= RSSITwo && RSSIOne >= RSSIThree) {
+    if (RSSIOne == -1000 && RSSITwo == -1000 && RSSIThree == -1000) {
+      Serial.printf("-----------------\n");
+      Serial.printf("Your position can't be determined\n");
+      Serial.printf("-----------------\n");
+      Heltec.display->drawString(0, 0, "Your position");
+      Heltec.display->drawString(0, 15, "is unclear");
+    } else if (RSSIOne >= RSSITwo && RSSIOne >= RSSIThree) {
       Serial.printf("-----------------\n");
       Serial.printf("You're in Zone 1 (Maria main Phone)\n");
       Serial.printf("-----------------\n");
+      Heltec.display->drawString(0, 0, "You're in");
+      Heltec.display->drawString(0, 15, "Zone 1");
     } else if (RSSITwo >= RSSIOne && RSSITwo >= RSSIThree) {
       Serial.printf("-----------------\n");
       Serial.printf("You're in Zone 2 (Maria Tablet)\n");
       Serial.printf("-----------------\n");
+      Heltec.display->drawString(0, 0, "You're in");
+      Heltec.display->drawString(0, 15, "Zone 2");
     } else if (RSSIThree >= RSSIOne && RSSIThree >= RSSITwo) {
       Serial.printf("-----------------\n");
       Serial.printf("You're in Zone 3 (Maria old Phone)\n");
       Serial.printf("-----------------\n");
-    } else if (RSSIOne == RSSITwo && RSSITwo == RSSIThree) {
-      Serial.printf("-----------------\n");
-      Serial.printf("Your position can't be determined\n");
-      Serial.printf("-----------------\n");
+      Heltec.display->drawString(0, 0, "You're in");
+      Heltec.display->drawString(0, 15, "Zone 3");
     }
   }
+
+  // display the results
+  Heltec.display->display();
+
 
   pBLEScan->clearResults(); // delete results fromBLEScan buffer to release memory
   numberOfVisibleBeacons = 0;
