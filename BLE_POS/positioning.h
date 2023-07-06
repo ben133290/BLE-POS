@@ -2,6 +2,7 @@
 #define POSITIONING_H
 
 #include <cmath>
+#include <Arduino.h>
 
 #ifndef EPSILON
 #define EPSILON 3
